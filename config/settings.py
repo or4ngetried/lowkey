@@ -16,7 +16,7 @@ if not SECRET_KEY:
     else:
         raise ImproperlyConfigured("Set SECRET_KEY in the production environment.")
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".herokuapp.com"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".herokuapp.com", ".onrender.com"]
 if os.environ.get("ALLOWED_HOSTS"):
     ALLOWED_HOSTS += [
         host.strip()
@@ -99,7 +99,7 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
-CSRF_TRUSTED_ORIGINS = ["https://*.herokuapp.com"]
+CSRF_TRUSTED_ORIGINS = ["https://*.herokuapp.com", "https://*.onrender.com"]
 if os.environ.get("CSRF_TRUSTED_ORIGINS"):
     CSRF_TRUSTED_ORIGINS += [
         origin.strip()
