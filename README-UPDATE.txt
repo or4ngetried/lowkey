@@ -1,20 +1,44 @@
-LOWKEY FINAL UPDATE
+LOWKEY DISCOVERY + DESIGN UPDATE
 
-1. Stop your server with Ctrl+C.
+LOCAL UPDATE
+1. Stop the local server with Ctrl+C.
 2. Back up db.sqlite3.
-3. Extract this update into C:\Users\Uthmaan\Desktop\polling and allow source files to replace the old ones. Keep your .venv and existing db.sqlite3.
-4. Open Command Prompt in that folder and run:
+3. Extract this ZIP into C:\Users\Uthmaan\Desktop\polling and allow files to replace existing source files.
+4. Keep your .venv and db.sqlite3. They are not included in this ZIP.
+5. In Command Prompt, run:
 
 .venv\Scripts\activate.bat
-python manage.py migrate
 python manage.py check
 python manage.py test
 python manage.py runserver
 
-Open http://127.0.0.1:8000/
+Open http://127.0.0.1:8000/ and test the Explore page, category chips, search, trending cards, poll creation, voting, results, and mobile layout.
 
-IMPORTANT:
-- Do not run makemigrations for this update. Migration 0003 is already included.
-- The new migration enforces one vote per user per poll. If old data contains duplicate votes in one poll, it keeps the earliest vote.
-- The update ZIP intentionally does not include db.sqlite3 or your .venv. Your local database is preserved.
-- Heroku deployment steps are in README.md. Heroku hosting/database use may cost money; check pricing and get parent/guardian approval before enabling billing.
+WHAT CHANGED
+- A redesigned Explore page with a clearer lowkey identity.
+- Trending polls based on actual votes.
+- Community counts for questions, members, and votes.
+- Category quick filters, search, and sorting.
+- Nine polls per page with pagination.
+- Improved poll detail sharing and result links.
+- More polished responsive layouts and reduced-motion accessibility.
+- Render domains are included in Django's default allowed hosts and CSRF origins.
+- No database migration is required for this update.
+
+PUSH THE UPDATE TO GITHUB
+From the project folder, run:
+
+git add .
+git commit -m "Refresh lowkey discovery and design"
+git push
+
+RENDER
+If your Render service is connected to this GitHub repository with automatic deploys enabled, the push should start a new deployment. Check that your Build Command is:
+
+pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate --noinput
+
+And your Start Command is:
+
+gunicorn config.wsgi:application
+
+Do not change your DATABASE_URL or SECRET_KEY. Do not upload db.sqlite3, .venv, or .env.

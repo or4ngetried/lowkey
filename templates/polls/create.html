@@ -2,9 +2,9 @@
 {% block title %}Create a poll · lowkey{% endblock %}
 {% block content %}
 <div class="form-shell">
-  <div class="eyebrow">START A CONVERSATION</div>
-  <h1>Make a <em>poll.</em></h1>
-  <p class="muted">Keep it simple. Ask whatever you're curious about.</p>
+  <div class="eyebrow">PUT A QUESTION OUT THERE</div>
+  <h1>Ask away<span class="period">.</span></h1>
+  <p class="muted">The best polls are the ones people cannot resist answering.</p>
   <form method="post" class="panel">
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="errorlist">{{ form.non_field_errors }}</div>{% endif %}

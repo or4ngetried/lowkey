@@ -5,6 +5,9 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.core.paginator import Paginator
+from django.utils import timezone
+from datetime import timedelta
 
 from .forms import ProfileForm, PollForm, SignUpForm, VoteForm
 from .models import CATEGORY_CHOICES, Option, Poll, Profile, Vote
@@ -47,15 +50,33 @@ def home(request):
         sort = "newest"
         polls = polls.order_by("-created_at")
 
+    paginator = Paginator(polls, 9)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    trending = (
+        Poll.objects.filter(is_active=True, visibility="public", votes__isnull=False)
+        .select_related("creator")
+        .annotate(vote_count=Count("votes", distinct=True))
+        .order_by("-vote_count", "-created_at")[:3]
+    )
+    community_stats = {
+        "polls": Poll.objects.filter(is_active=True, visibility="public").count(),
+        "members": User.objects.count(),
+        "votes": Vote.objects.filter(poll__visibility="public", poll__is_active=True).count(),
+    }
+
     return render(
         request,
         "polls/home.html",
         {
-            "polls": polls,
+            "polls": page_obj.object_list,
+            "page_obj": page_obj,
+            "paginator": paginator,
             "query": query,
             "selected_category": category,
             "selected_sort": sort,
             "categories": CATEGORY_CHOICES,
+            "trending": trending,
+            "community_stats": community_stats,
         },
     )
 

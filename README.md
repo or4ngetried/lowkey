@@ -53,73 +53,43 @@ python manage.py runserver
 
 The included `0003` migration adds a poll reference to each vote and enforces one vote per user per poll. If the old database contains more than one vote by the same user in the same poll, the migration keeps the earliest vote and removes the later duplicates. It does not delete accounts or polls.
 
-## Deploy to Heroku
+## Deploy to Render
 
-Heroku hosting and its database may involve paid usage. Check the current plan and database pricing with a parent/guardian before enabling billing.
+The project can run on Render as a Django web service connected to PostgreSQL. Free services and databases have usage and retention limits; check Render's current pricing and database expiration terms before relying on it for permanent data.
 
-You will need:
-- A Heroku account and the Heroku CLI installed
-- Git installed
-- A Heroku Postgres database attached to the app
+### Render web service settings
 
-From Command Prompt or PowerShell in the project folder:
+- Runtime: Python 3
+- Branch: `main`
+- Build command: `pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate --noinput`
+- Start command: `gunicorn config.wsgi:application`
+- Instance: Free for testing
 
-```bat
-heroku login
-git init
+### Environment variables
+
+Set these in the Render web service's Environment tab:
+
+- `DEBUG=False`
+- `SECRET_KEY` — generate a strong random secret; keep it private
+- `DATABASE_URL` — the database's Internal Database URL
+- `ALLOWED_HOSTS=.onrender.com`
+- `CSRF_TRUSTED_ORIGINS=https://*.onrender.com`
+
+The Render PostgreSQL database must be in the same region as the web service. Do not put `db.sqlite3`, `.venv`, `.env`, the secret key, or database credentials in GitHub.
+
+### Updating the live site
+
+After changing code locally, run tests, then push the changes:
+
+```bash
 git add .
-git commit -m "Prepare lowkey for launch"
-heroku create choose-a-unique-app-name --stack heroku-26
-heroku addons:create heroku-postgresql:essential-0
+git commit -m "Describe the update"
+git push
 ```
 
-Set production settings. First generate a strong secret key locally:
+If automatic deploys are enabled in Render, the new commit will trigger a deployment. Otherwise, use Manual Deploy → Deploy latest commit in the Render dashboard.
 
-```bat
-python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-```
-
-Copy the generated value, then set it on Heroku:
-
-```bat
-heroku config:set DEBUG=False SECRET_KEY="paste-your-generated-key-here"
-```
-
-Deploy the `main` branch:
-
-```bat
-git branch -M main
-git push heroku main
-```
-
-The `release` command in the Procfile automatically runs database migrations during deployment. When the deploy finishes, create the site's admin account:
-
-```bat
-heroku run python manage.py createsuperuser
-```
-
-Then open the site:
-
-```bat
-heroku open
-```
-
-Useful troubleshooting commands:
-
-```bat
-heroku logs --tail
-heroku releases:output
-heroku config
-```
-
-### Important deployment notes
-
-- The Heroku Postgres database starts empty. Your local SQLite database is not uploaded, and this update deliberately excludes `db.sqlite3` so your local data stays safe.
-- Keep `SECRET_KEY` private. Never commit it into your code.
-- Do not set `DEBUG=True` on the public site.
-- Heroku automatically uses the `DATABASE_URL` value from the attached Postgres add-on.
-- The app uses the `.python-version` file to select Python 3.12 on Heroku.
-- Before inviting lots of people, consider adding email verification, password-reset email delivery, moderation/reporting tools, rate limits, and privacy/terms pages.
+The free Render web service may spin down when idle. Free PostgreSQL plans have time limits and should not be treated as permanent storage. Check the current Render pricing and retention policy before inviting a large audience or storing important data.
 
 ## Project layout
 

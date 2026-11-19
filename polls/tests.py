@@ -36,6 +36,33 @@ class PollFlowTests(TestCase):
         self.assertContains(response, self.poll.question)
         self.assertNotContains(response, private.question)
 
+
+    def test_home_shows_discovery_sections_and_stats(self):
+        Vote.objects.create(poll=self.poll, option=self.first, user=self.other_user)
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Trending")
+        self.assertContains(response, "questions asked")
+        self.assertContains(response, self.poll.question)
+
+    def test_home_category_filter(self):
+        self.poll.category = "music"
+        self.poll.save(update_fields=["category"])
+        response = self.client.get(reverse("home"), {"category": "food"})
+        self.assertNotContains(response, self.poll.question)
+
+    def test_home_paginates_public_polls(self):
+        for number in range(10):
+            poll = Poll.objects.create(
+                question=f"Extra question {number}", creator=self.user, visibility="public"
+            )
+            Option.objects.create(poll=poll, text="Yes")
+            Option.objects.create(poll=poll, text="No")
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.context["paginator"].per_page, 9)
+        self.assertEqual(response.context["page_obj"].number, 1)
+        self.assertTrue(response.context["page_obj"].has_next())
+
     def test_private_poll_requires_share_token(self):
         private = Poll.objects.create(
             question="Only by link", creator=self.user, visibility="private"

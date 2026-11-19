@@ -22,7 +22,11 @@
       <a class="button" href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in to vote ↗</a>
     {% endif %}
   </div>
-  <div class="muted below">{{ poll.total_votes }} votes · {{ poll.options.count }} options</div>
-  {% if is_shared %}<div class="share-note">Private poll: anyone with this link can participate. Please only share it with people you trust.</div>{% endif %}
+  <div class="detail-meta"><span>{{ poll.total_votes }} votes</span><span>{{ poll.options.count }} choices</span><span>{{ poll.created_at|date:"M j, Y" }}</span></div>
+  <div class="detail-actions">
+    <button class="copy-button" type="button" data-copy="{{ request.build_absolute_uri }}">Copy poll link ↗</button>
+    {% if already_voted %}<a class="text-link" href="{% if is_shared %}{% url 'shared_results' poll.share_token %}{% else %}{% url 'results' poll.id %}{% endif %}">View results →</a>{% endif %}
+  </div>
+  {% if is_shared %}<div class="share-note">Private poll · Anyone with this link can participate. Share it thoughtfully.</div>{% endif %}
 </div>
 {% endblock %}
