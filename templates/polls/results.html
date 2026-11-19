@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Results · lowkey{% endblock %}
+{% block content %}
+<div class="detail-shell">
+  <a class="back" href="{% if poll.visibility == 'private' %}{% url 'shared_poll' poll.share_token %}{% else %}{% url 'poll_detail' poll.id %}{% endif %}">← Back to poll</a>
+  <div class="eyebrow">THE RESULTS</div>
+  <h1>{{ poll.question }}</h1>
+  <p class="muted">{{ total }} total vote{{ total|pluralize }}</p>
+  <div class="panel results">
+    {% for item in results %}
+      <div class="result-row">
+        <div class="result-label"><strong>{{ item.option.text }}</strong><span>{{ item.votes }} · {{ item.percent }}%</span></div>
+        <div class="bar" role="img" aria-label="{{ item.percent }} percent"><span style="width:{{ item.percent }}%"></span></div>
+      </div>
+    {% empty %}<p>No options yet.</p>{% endfor %}
+    {% if total == 0 %}<p>No votes yet. Be the first.</p>{% endif %}
+  </div>
+  {% if poll.visibility == "public" %}<a class="text-link" href="{% url 'home' %}">Explore more polls →</a>
+  {% else %}<a class="text-link" href="{% url 'shared_poll' poll.share_token %}">Back to this private poll →</a>{% endif %}
+</div>
+{% endblock %}

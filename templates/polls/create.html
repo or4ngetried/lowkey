@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Create a poll · lowkey{% endblock %}
+{% block content %}
+<div class="form-shell">
+  <div class="eyebrow">START A CONVERSATION</div>
+  <h1>Make a <em>poll.</em></h1>
+  <p class="muted">Keep it simple. Ask whatever you're curious about.</p>
+  <form method="post" class="panel">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="errorlist">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+        {% for error in field.errors %}<small class="error">{{ error }}</small>{% endfor %}
+      </div>
+    {% endfor %}
+    <button class="button" type="submit">Publish poll ↗</button>
+  </form>
+</div>
+{% endblock %}

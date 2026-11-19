@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ poll.question }} · lowkey{% endblock %}
+{% block content %}
+<div class="detail-shell">
+  <a class="back" href="{% url 'home' %}">← All polls</a>
+  <div class="eyebrow">{{ poll.get_category_display|upper }} · BY <a href="{% url 'profile' poll.creator.username %}">@{{ poll.creator.username }}</a>{% if is_shared %} · PRIVATE LINK{% endif %}</div>
+  <h1>{{ poll.question }}</h1>
+  {% if poll.description %}<p class="lead">{{ poll.description }}</p>{% endif %}
+  <div class="panel">
+    {% if already_voted %}
+      <p>You've already voted in this poll.</p>
+      <a class="button" href="{% if is_shared %}{% url 'shared_results' poll.share_token %}{% else %}{% url 'results' poll.id %}{% endif %}">See results ↗</a>
+    {% elif user.is_authenticated %}
+      <form method="post" action="{% if is_shared %}{% url 'shared_vote' poll.share_token %}{% else %}{% url 'vote' poll.id %}{% endif %}">
+        {% csrf_token %}
+        <div class="choices">{{ form.option }}</div>
+        {% for error in form.option.errors %}<p class="error">{{ error }}</p>{% endfor %}
+        <button class="button" type="submit">Cast my vote ↗</button>
+      </form>
+    {% else %}
+      <p>Log in to cast your vote and see the results.</p>
+      <a class="button" href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in to vote ↗</a>
+    {% endif %}
+  </div>
+  <div class="muted below">{{ poll.total_votes }} votes · {{ poll.options.count }} options</div>
+  {% if is_shared %}<div class="share-note">Private poll: anyone with this link can participate. Please only share it with people you trust.</div>{% endif %}
+</div>
+{% endblock %}

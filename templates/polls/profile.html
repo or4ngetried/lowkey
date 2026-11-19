@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}@{{ viewed_user.username }} · lowkey{% endblock %}
+{% block content %}
+<div class="profile-head">
+  <div class="avatar">{{ viewed_user.username|first|upper }}</div>
+  <div><div class="eyebrow">COMMUNITY MEMBER</div><h1>@{{ viewed_user.username }}</h1><p class="muted">Joined {{ profile_obj.joined_at|date:"F Y" }}</p></div>
+</div>
+<p class="profile-bio">{{ profile_obj.bio|default:"Just hanging out on lowkey." }}</p>
+{% if form %}
+  <form method="post" class="panel profile-edit">
+    {% csrf_token %}
+    <label for="id_bio">Edit your bio</label>
+    {{ form.bio }}
+    {% for error in form.bio.errors %}<small class="error">{{ error }}</small>{% endfor %}
+    <button class="button" type="submit">Save profile</button>
+  </form>
+{% endif %}
+<div class="section-head"><div><div class="eyebrow">THEIR QUESTIONS</div><h2>Public polls</h2></div></div>
+<div class="poll-grid">
+  {% for poll in created %}
+    <a class="poll-card" href="{% url 'poll_detail' poll.id %}"><span class="tag">{{ poll.get_category_display }}</span><h3>{{ poll.question }}</h3><div class="card-bottom"><span>{{ poll.total_votes }} votes</span></div></a>
+  {% empty %}<p class="muted">No public polls yet.</p>{% endfor %}
+</div>
+<div class="section-head"><div><div class="eyebrow">RECENT ACTIVITY</div><h2>Recent votes</h2></div></div>
+<div class="activity-list">
+  {% for vote in votes %}
+    <a href="{% url 'poll_detail' vote.poll.id %}" class="activity-item"><span>Voted <strong>{{ vote.option.text }}</strong> on “{{ vote.poll.question }}”</span><small>{{ vote.created_at|date:"M j, Y" }}</small></a>
+  {% empty %}<p class="muted">No votes yet.</p>{% endfor %}
+</div>
+{% endblock %}

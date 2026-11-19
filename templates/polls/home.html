@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Explore polls · lowkey{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="eyebrow">A QUIETER CORNER OF THE INTERNET</div>
+  <h1>What's on<br><em>your mind?</em></h1>
+  <p>Ask something. Pick a side. See what everyone thinks.</p>
+  {% if user.is_authenticated %}<a class="button" href="{% url 'create_poll' %}">Make a poll ↗</a>
+  {% else %}<a class="button" href="{% url 'signup' %}">Get started ↗</a>{% endif %}
+</section>
+<div class="section-head">
+  <div><div class="eyebrow">THE COMMUNITY</div><h2>Explore polls</h2></div>
+  <span class="muted">{{ polls|length }} polls</span>
+</div>
+<form method="get" class="filters" role="search">
+  <input name="q" value="{{ query }}" placeholder="Search questions or people…" aria-label="Search questions or people">
+  <select name="category" aria-label="Filter by category">
+    <option value="">All categories</option>
+    {% for value,label in categories %}<option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <select name="sort" aria-label="Sort polls">
+    <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>Newest</option>
+    <option value="popular" {% if selected_sort == "popular" %}selected{% endif %}>Most popular</option>
+    <option value="oldest" {% if selected_sort == "oldest" %}selected{% endif %}>Oldest</option>
+  </select>
+  <button class="filter-button" type="submit">Find polls</button>
+</form>
+<div class="poll-grid">
+  {% for poll in polls %}
+    <a class="poll-card" href="{% url 'poll_detail' poll.id %}">
+      <div class="card-top">
+        <span class="tag">{{ poll.get_category_display }}</span>
+        <span class="muted">by <span class="text-link">@{{ poll.creator.username }}</span></span>
+      </div>
+      <h3>{{ poll.question }}</h3>
+      {% if poll.description %}<p>{{ poll.description|truncatechars:95 }}</p>{% endif %}
+      <div class="card-bottom">
+        <span>{{ poll.option_count }} options</span>
+        <span>{{ poll.vote_count }} votes</span>
+        <span class="arrow">↗</span>
+      </div>
+    </a>
+  {% empty %}
+    <div class="empty"><h3>No polls found.</h3><p>Try another search, or be the first to ask something.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}
