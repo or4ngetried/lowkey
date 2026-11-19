@@ -1,30 +1,19 @@
 {% extends "base.html" %}
 {% block title %}@{{ viewed_user.username }} · lowkey{% endblock %}
 {% block content %}
-<div class="profile-head">
-  <div class="avatar">{{ viewed_user.username|first|upper }}</div>
-  <div><div class="eyebrow">COMMUNITY MEMBER</div><h1>@{{ viewed_user.username }}</h1><p class="muted">Joined {{ profile_obj.joined_at|date:"F Y" }}</p></div>
-</div>
-<p class="profile-bio">{{ profile_obj.bio|default:"Just hanging out on lowkey." }}</p>
-{% if form %}
-  <form method="post" class="panel profile-edit">
-    {% csrf_token %}
-    <label for="id_bio">Edit your bio</label>
-    {{ form.bio }}
-    {% for error in form.bio.errors %}<small class="error">{{ error }}</small>{% endfor %}
-    <button class="button" type="submit">Save profile</button>
-  </form>
-{% endif %}
-<div class="section-head"><div><div class="eyebrow">THEIR QUESTIONS</div><h2>Public polls</h2></div></div>
-<div class="poll-grid">
-  {% for poll in created %}
-    <a class="poll-card" href="{% url 'poll_detail' poll.id %}"><span class="tag">{{ poll.get_category_display }}</span><h3>{{ poll.question }}</h3><div class="card-bottom"><span>{{ poll.total_votes }} votes</span></div></a>
-  {% empty %}<p class="muted">No public polls yet.</p>{% endfor %}
-</div>
-<div class="section-head"><div><div class="eyebrow">RECENT ACTIVITY</div><h2>Recent votes</h2></div></div>
-<div class="activity-list">
-  {% for vote in votes %}
-    <a href="{% url 'poll_detail' vote.poll.id %}" class="activity-item"><span>Voted <strong>{{ vote.option.text }}</strong> on “{{ vote.poll.question }}”</span><small>{{ vote.created_at|date:"M j, Y" }}</small></a>
-  {% empty %}<p class="muted">No votes yet.</p>{% endfor %}
-</div>
+<section class="profile-page">
+  <div class="profile-cover"></div>
+  <div class="profile-head social-profile-head">
+    <div class="avatar profile-avatar">{{ viewed_user.username|first|upper }}</div>
+    <div class="profile-identity"><div class="eyebrow">LOWKEY MEMBER</div><h1>@{{ viewed_user.username }}</h1><p class="muted">Joined {{ profile_obj.joined_at|date:"F Y" }}</p></div>
+    {% if user.is_authenticated and user != viewed_user %}<div class="profile-actions">{% if can_message %}<form method="post" action="{% url 'start_conversation' viewed_user.username %}">{% csrf_token %}<button class="button button-secondary" type="submit">Message</button></form>{% endif %}<form method="post" action="{% url 'follow_user' viewed_user.username %}">{% csrf_token %}<button class="button follow-button {% if is_following %}following{% endif %}" type="submit">{% if is_following %}Following ·{% else %}＋ Follow{% endif %}</button></form></div>{% elif user == viewed_user %}<a class="button follow-button" href="#edit-profile">Edit profile ↓</a>{% endif %}
+  </div>
+  <p class="profile-bio">{{ profile_obj.bio|default:"Just hanging out on lowkey." }}</p>
+  <div class="profile-stats"><div><strong>{{ profile_post_count }}</strong><span>posts</span></div><div><strong>{{ follower_count }}</strong><span>followers</span></div><div><strong>{{ following_count }}</strong><span>following</span></div></div>
+  {% if followers %}<div class="follower-peek"><span class="muted">FOLLOWED BY</span>{% for person in followers %}<a href="{% url 'profile' person.username %}">@{{ person.username }}</a>{% endfor %}</div>{% endif %}
+  {% if form %}<form method="post" class="panel profile-edit" id="edit-profile">{% csrf_token %}<label for="id_bio">Edit your bio</label>{{ form.bio }}{% for error in form.bio.errors %}<small class="error">{{ error }}</small>{% endfor %}<button class="button" type="submit">Save profile</button></form>{% endif %}
+  <div class="section-head profile-post-heading"><div><div class="eyebrow">WHAT THEY'RE SAYING</div><h2>Posts<span class="period">.</span></h2></div></div>
+  {% if social_posts %}<div class="social-feed profile-feed">{% for post in social_posts %}<article class="feed-post text-feed-post"><div class="post-author-row"><div class="mini-avatar">{{ viewed_user.username|first|upper }}</div><div class="post-author"><a href="{% url 'profile' viewed_user.username %}">@{{ viewed_user.username }}</a><span>{{ post.created_at|timesince }} ago</span></div><span class="post-kind">POST</span></div><a class="text-post-body" href="{% url 'social_post_detail' post.id %}">{{ post.body|linebreaksbr }}</a><div class="post-actions"><span class="post-stat">{{ post.likes.count }} likes</span><span class="post-stat">{{ post.comments.count }} comments</span><a class="post-action-link" href="{% url 'social_post_detail' post.id %}">Discuss ↗</a></div></article>{% endfor %}</div>{% endif %}
+  <div class="social-feed profile-feed">{% for poll in created %}<article class="feed-post"><div class="post-author-row"><div class="mini-avatar">{{ viewed_user.username|first|upper }}</div><div class="post-author"><a href="{% url 'profile' viewed_user.username %}">@{{ viewed_user.username }}</a><span>{{ poll.created_at|timesince }} ago · {{ poll.get_category_display }}</span></div><span class="post-kind">POLL</span></div><a class="post-main" href="{% url 'poll_detail' poll.id %}"><h3>{{ poll.question }}</h3>{% if poll.description %}<p>{{ poll.description|truncatechars:140 }}</p>{% endif %}<div class="post-options">{% for option in poll.options.all|slice:":3" %}<span>{{ option.text }}</span>{% endfor %}</div></a><div class="post-actions"><span class="post-stat">{{ poll.total_votes }} votes</span><span class="post-stat">{{ poll.comments.count }} comments</span><a class="post-action-link" href="{% url 'poll_detail' poll.id %}">Join in ↗</a></div></article>{% empty %}{% if not social_posts %}<p class="muted">No public posts yet.</p>{% endif %}{% endfor %}</div>
+</section>
 {% endblock %}

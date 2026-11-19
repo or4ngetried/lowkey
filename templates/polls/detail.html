@@ -1,32 +1,25 @@
 {% extends "base.html" %}
 {% block title %}{{ poll.question }} · lowkey{% endblock %}
 {% block content %}
-<div class="detail-shell">
-  <a class="back" href="{% url 'home' %}">← All polls</a>
-  <div class="eyebrow">{{ poll.get_category_display|upper }} · BY <a href="{% url 'profile' poll.creator.username %}">@{{ poll.creator.username }}</a>{% if is_shared %} · PRIVATE LINK{% endif %}</div>
+<div class="detail-shell social-detail">
+  <a class="back" href="{% url 'home' %}">← Back to feed</a>
+  <div class="post-author-row detail-author"><a class="mini-avatar" href="{% url 'profile' poll.creator.username %}">{{ poll.creator.username|first|upper }}</a><div class="post-author"><a href="{% url 'profile' poll.creator.username %}">@{{ poll.creator.username }}</a><span>{{ poll.created_at|date:"M j, Y · g:i A" }} · {{ poll.get_category_display }}</span></div>{% if is_shared %}<span class="post-kind">PRIVATE LINK</span>{% endif %}</div>
   <h1>{{ poll.question }}</h1>
   {% if poll.description %}<p class="lead">{{ poll.description }}</p>{% endif %}
-  <div class="panel">
-    {% if already_voted %}
-      <p>You've already voted in this poll.</p>
-      <a class="button" href="{% if is_shared %}{% url 'shared_results' poll.share_token %}{% else %}{% url 'results' poll.id %}{% endif %}">See results ↗</a>
-    {% elif user.is_authenticated %}
-      <form method="post" action="{% if is_shared %}{% url 'shared_vote' poll.share_token %}{% else %}{% url 'vote' poll.id %}{% endif %}">
-        {% csrf_token %}
-        <div class="choices">{{ form.option }}</div>
-        {% for error in form.option.errors %}<p class="error">{{ error }}</p>{% endfor %}
-        <button class="button" type="submit">Cast my vote ↗</button>
-      </form>
-    {% else %}
-      <p>Log in to cast your vote and see the results.</p>
-      <a class="button" href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in to vote ↗</a>
-    {% endif %}
+  <div class="panel poll-vote-panel">
+    {% if already_voted %}<p>You've already voted in this poll.</p><a class="button" href="{% if is_shared %}{% url 'shared_results' poll.share_token %}{% else %}{% url 'results' poll.id %}{% endif %}">See results ↗</a>
+    {% elif user.is_authenticated %}<form method="post" action="{% if is_shared %}{% url 'shared_vote' poll.share_token %}{% else %}{% url 'vote' poll.id %}{% endif %}">{% csrf_token %}<div class="choices">{{ form.option }}</div>{% for error in form.option.errors %}<p class="error">{{ error }}</p>{% endfor %}<button class="button" type="submit">Cast my vote ↗</button></form>
+    {% else %}<p>Join the conversation to vote.</p><a class="button" href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in to vote ↗</a>{% endif %}
   </div>
-  <div class="detail-meta"><span>{{ poll.total_votes }} votes</span><span>{{ poll.options.count }} choices</span><span>{{ poll.created_at|date:"M j, Y" }}</span></div>
-  <div class="detail-actions">
-    <button class="copy-button" type="button" data-copy="{{ request.build_absolute_uri }}">Copy poll link ↗</button>
-    {% if already_voted %}<a class="text-link" href="{% if is_shared %}{% url 'shared_results' poll.share_token %}{% else %}{% url 'results' poll.id %}{% endif %}">View results →</a>{% endif %}
+  <div class="social-detail-actions">
+    {% if user.is_authenticated %}<form method="post" action="{% if is_shared %}{% url 'shared_like' poll.share_token %}{% else %}{% url 'like_poll' poll.id %}{% endif %}">{% csrf_token %}<button class="social-action {% if liked %}liked{% endif %}" type="submit">{% if liked %}♥{% else %}♡{% endif %} {{ like_count }} like{{ like_count|pluralize }}</button></form>{% else %}<span class="social-action">♡ {{ like_count }} like{{ like_count|pluralize }}</span>{% endif %}
+    <span class="social-action">◌ {{ comments|length }} comments</span><button class="copy-button" type="button" data-copy="{{ request.build_absolute_uri }}">Share ↗</button>
   </div>
   {% if is_shared %}<div class="share-note">Private poll · Anyone with this link can participate. Share it thoughtfully.</div>{% endif %}
+  <section class="comments-section">
+    <div class="section-head"><div><div class="eyebrow">KEEP IT GOING</div><h2>Conversation<span class="period">.</span></h2></div></div>
+    {% if user.is_authenticated %}<form method="post" class="comment-form" action="{% if is_shared %}{% url 'shared_comment' poll.share_token %}{% else %}{% url 'add_comment' poll.id %}{% endif %}">{% csrf_token %}{{ comment_form.body }}<button class="button" type="submit">Post comment ↗</button></form>{% else %}<p class="muted">Log in to join the conversation.</p>{% endif %}
+    <div class="comment-list">{% for comment in comments %}<article class="comment-item"><a class="mini-avatar small-avatar" href="{% url 'profile' comment.author.username %}">{{ comment.author.username|first|upper }}</a><div class="comment-content"><div class="comment-meta"><a href="{% url 'profile' comment.author.username %}">@{{ comment.author.username }}</a><span>{{ comment.created_at|timesince }} ago</span></div><p>{{ comment.body|linebreaksbr }}</p></div>{% if user == comment.author %}<form method="post" action="{% url 'delete_comment' comment.id %}">{% csrf_token %}<button class="delete-comment" type="submit" aria-label="Delete comment">×</button></form>{% endif %}</article>{% empty %}<p class="muted empty-comments">No comments yet. Start the conversation.</p>{% endfor %}</div>
+  </section>
 </div>
 {% endblock %}

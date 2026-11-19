@@ -81,3 +81,28 @@ class ProfileForm(forms.Form):
             attrs={"rows": 3, "placeholder": "A little about you...", "maxlength": "240"}
         ),
     )
+
+
+class CommentForm(forms.Form):
+    body = forms.CharField(
+        max_length=500,
+        widget=forms.Textarea(attrs={
+            "rows": 2,
+            "placeholder": "Add to the conversation…",
+            "maxlength": "500",
+        }),
+    )
+
+
+class SocialPostForm(forms.Form):
+    body = forms.CharField(
+        max_length=1200,
+        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "What's on your mind?", "maxlength": 1200}),
+    )
+
+
+class DirectMessageForm(forms.Form):
+    body = forms.CharField(
+        max_length=2000,
+        widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Write a message…", "maxlength": 2000}),
+    )

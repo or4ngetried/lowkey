@@ -6,18 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f3f2ec">
   <meta name="color-scheme" content="light">
-  <meta name="description" content="Lowkey is a quieter corner of the internet for questions, polls, and interesting answers.">
-  <title>{% block title %}lowkey polls{% endblock %}</title>
+  <meta name="description" content="Lowkey is a social corner for polls, opinions, and conversations.">
+  <title>{% block title %}lowkey · your people, your opinions{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'polls/style.css' %}">
 </head>
 <body>
 <header class="topbar">
   <a class="brand" href="{% url 'home' %}" aria-label="lowkey home"><span class="brand-dot"></span> lowkey<span class="brand-period">.</span></a>
   <nav aria-label="Main navigation">
-    <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>Explore</a>
+    <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>Discover</a>
     {% if user.is_authenticated %}
-      <a href="{% url 'my_polls' %}" {% if request.resolver_match.url_name == 'my_polls' %}aria-current="page"{% endif %}>My polls</a>
-      <a class="nav-create" href="{% url 'create_poll' %}">＋ Create poll</a>
+      <a href="{% url 'home' %}?feed=following">Following</a>
+      <a href="{% url 'message_inbox' %}" {% if request.resolver_match.url_name == 'message_inbox' or request.resolver_match.url_name == 'conversation_detail' %}aria-current="page"{% endif %}>Messages</a>
+      <a href="{% url 'my_polls' %}" {% if request.resolver_match.url_name == 'my_polls' %}aria-current="page"{% endif %}>My posts</a>
+      <a class="nav-create" href="{% url 'create_poll' %}">＋ Create</a>
       <a href="{% url 'profile' user.username %}">@{{ user.username }}</a>
       <form class="inline" method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-button" type="submit">Log out</button></form>
     {% else %}
@@ -27,28 +29,36 @@
   </nav>
 </header>
 <main class="wrap">
-  {% if messages %}
-    <div class="messages" role="status" aria-live="polite">
-      {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
-    </div>
-  {% endif %}
+  {% if messages %}<div class="messages" role="status" aria-live="polite">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
   {% block content %}{% endblock %}
 </main>
-<footer><a href="{% url 'home' %}" class="footer-brand">lowkey.</a><span>Small questions. Big opinions.</span><a href="{% url 'create_poll' %}">Ask something ↗</a></footer>
+{% if user.is_authenticated %}<div class="time-usage-pill" id="lowkey-time-pill" aria-live="polite">Today · <strong id="lowkey-time-left">2:00:00</strong> left</div><div class="time-limit-overlay" id="lowkey-time-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="time-limit-title"><div class="time-limit-card"><div class="eyebrow">LOWKEY DAILY LIMIT</div><div class="time-limit-icon">✳</div><h2 id="time-limit-title">That’s enough scrolling for now.</h2><p>You’ve used your two hours of active lowkey time today. Take the rest of the day back, or add five more minutes.</p><div class="time-limit-reset">Your time resets at midnight.</div><button type="button" class="button time-extension-button" id="lowkey-five-more">Give me 5 more minutes</button><p class="time-limit-footnote">When those five minutes are up, this screen will return.</p></div></div>{% endif %}
+<footer><a href="{% url 'home' %}" class="footer-brand">lowkey.</a><span>Your people. Your opinions.</span><a href="{% url 'create_poll' %}">Start a conversation ↗</a></footer>
 <script>
 document.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-copy]");
   if (!button) return;
   const value = button.getAttribute("data-copy");
-  try {
-    await navigator.clipboard.writeText(value);
-    const oldText = button.textContent;
-    button.textContent = "Copied!";
-    window.setTimeout(() => { button.textContent = oldText; }, 1600);
-  } catch (error) {
-    window.prompt("Copy this poll link:", value);
-  }
+  try { await navigator.clipboard.writeText(value); const oldText = button.textContent; button.textContent = "Copied!"; window.setTimeout(() => { button.textContent = oldText; }, 1600); }
+  catch (error) { window.prompt("Copy this link:", value); }
 });
 </script>
+{% if user.is_authenticated %}<script>
+(function(){
+  const LIMIT=7200, EXTENSION=300, IDLE_MS=60000, KEY='lowkey-active-time-v1-{{ user.id }}', LOCK_KEY='lowkey-active-time-lock-{{ user.id }}';
+  const overlay=document.getElementById('lowkey-time-overlay'), left=document.getElementById('lowkey-time-left'), pill=document.getElementById('lowkey-time-pill'), extend=document.getElementById('lowkey-five-more');
+  if(!overlay||!left)return;
+  const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+  let state;try{state=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){state=null}if(!state||state.day!==today())state={day:today(),used:0,extra:0};
+  let lastActivity=Date.now();const tabId=(sessionStorage.getItem('lowkey-timer-tab')||((crypto.randomUUID&&crypto.randomUUID())||String(Math.random())));sessionStorage.setItem('lowkey-timer-tab',tabId);const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}};const active=()=>!document.hidden&&(Date.now()-lastActivity<IDLE_MS);function claimLeader(){try{const now=Date.now();const current=JSON.parse(localStorage.getItem(LOCK_KEY)||'null');if(!current||current.expires<now||current.owner===tabId){localStorage.setItem(LOCK_KEY,JSON.stringify({owner:tabId,expires:now+4000}));return true}}catch(e){}return false}
+  const fmt=n=>{n=Math.max(0,Math.ceil(n));const h=Math.floor(n/3600),m=Math.floor((n%3600)/60),s=n%60;return (h?String(h)+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')};
+  function render(){const remaining=Math.max(0,LIMIT+state.extra-state.used);left.textContent=fmt(remaining);overlay.hidden=remaining>0;document.body.classList.toggle('time-locked',remaining<=0);if(pill)pill.hidden=remaining<=0;}
+  ['pointerdown','pointermove','keydown','scroll','touchstart','click'].forEach(name=>document.addEventListener(name,()=>{lastActivity=Date.now()},{passive:true}));
+  extend.addEventListener('click',()=>{state.extra+=EXTENSION;save();lastActivity=Date.now();render()});
+  window.addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){try{const incoming=JSON.parse(e.newValue);if(incoming.day===today()){state=incoming;render()}}catch(err){}}});
+  function tick(){if(state.day!==today())state={day:today(),used:0,extra:0};if(active()&&state.used<LIMIT+state.extra&&claimLeader()){state.used=Math.min(LIMIT+state.extra,state.used+1);save()}render()}
+  render();setInterval(tick,1000);
+})();
+</script>{% endif %}
 </body>
 </html>

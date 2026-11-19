@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}My polls · lowkey{% endblock %}
+{% block title %}My posts · lowkey{% endblock %}
 {% block content %}
 <div class="section-head my-polls-head">
-  <div><div class="eyebrow">YOUR CORNER OF LOWKEY</div><h1>My polls<span class="period">.</span></h1><p class="muted">All the questions you have put out into the world.</p></div>
+  <div><div class="eyebrow">YOUR CORNER OF LOWKEY</div><h1>My posts<span class="period">.</span></h1><p class="muted">Your updates, questions, and conversations.</p></div>
   <a class="button" href="{% url 'create_poll' %}">＋ New poll</a>
 </div>
 <div class="poll-grid">
@@ -25,4 +25,5 @@
     <div class="empty"><h3>No polls yet.</h3><a class="text-link" href="{% url 'create_poll' %}">Create your first one →</a></div>
   {% endfor %}
 </div>
+<section class="profile-post-heading"><div class="section-head"><div><div class="eyebrow">YOUR UPDATES</div><h2>Text posts<span class="period">.</span></h2></div></div><div class="social-feed">{% for post in social_posts %}<article class="feed-post text-feed-post"><div class="post-author-row"><div class="mini-avatar">{{ user.username|first|upper }}</div><div class="post-author"><a href="{% url 'profile' user.username %}">@{{ user.username }}</a><span>{{ post.created_at|timesince }} ago</span></div><span class="post-kind">POST</span></div><a class="text-post-body" href="{% url 'social_post_detail' post.id %}">{{ post.body|linebreaksbr }}</a><div class="post-actions"><span class="post-stat">{{ post.likes.count }} likes</span><span class="post-stat">{{ post.comments.count }} comments</span><a class="post-action-link" href="{% url 'social_post_detail' post.id %}">Discuss ↗</a></div></article>{% empty %}<p class="muted">No text posts yet.</p>{% endfor %}</div></section>
 {% endblock %}

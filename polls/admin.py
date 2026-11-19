@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Option, Poll, Profile, Vote
+from .models import Comment, Follow, Option, Poll, PollLike, Profile, Vote, SocialPost, SocialPostLike, SocialPostComment, Conversation, DirectMessage
 
 
 class OptionInline(admin.TabularInline):
@@ -24,3 +24,9 @@ class VoteAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Profile)
+
+admin.site.register(Follow)
+admin.site.register(PollLike)
+admin.site.register(Comment)
+
+admin.site.register([SocialPost, SocialPostLike, SocialPostComment, Conversation, DirectMessage])

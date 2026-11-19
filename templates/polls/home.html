@@ -1,74 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Explore polls · lowkey{% endblock %}
+{% block title %}Discover · lowkey{% endblock %}
 {% block content %}
-<section class="hero hero-home">
-  <div class="hero-copy">
-    <div class="eyebrow"><span class="live-dot"></span> YOUR DAILY DOSE OF OPINION</div>
-    <h1>Everyone's got<br><em>a take.</em></h1>
-    <p>Little questions. Big opinions. Find out what people really think.</p>
-    {% if user.is_authenticated %}<a class="button" href="{% url 'create_poll' %}">Ask the internet <span>↗</span></a>
-    {% else %}<a class="button" href="{% url 'signup' %}">Get in on it <span>↗</span></a>{% endif %}
-  </div>
-  <div class="hero-stamp" aria-hidden="true"><span>THE</span><strong>LOW<br>KEY</strong><span>OPINION CLUB</span><i>✳</i></div>
-</section>
-<section class="community-strip" aria-label="Community statistics">
-  <div><strong>{{ community_stats.polls }}</strong><span>questions asked</span></div>
-  <div><strong>{{ community_stats.members }}</strong><span>members</span></div>
-  <div><strong>{{ community_stats.votes }}</strong><span>opinions shared</span></div>
-  <div class="strip-note">A little less scrolling.<br>A little more saying.</div>
-</section>
-{% if trending %}
-<section class="trending-section">
-  <div class="section-head compact-head"><div><div class="eyebrow">THE CROWD HAS SPOKEN</div><h2>Trending <em>right now</em></h2></div><span class="trend-mark">↗ HOT</span></div>
-  <div class="trending-grid">
-    {% for poll in trending %}
-      <a class="trend-card trend-{{ forloop.counter }}" href="{% url 'poll_detail' poll.id %}">
-        <span class="trend-number">0{{ forloop.counter }}</span>
-        <span class="tag">{{ poll.get_category_display }}</span>
-        <h3>{{ poll.question }}</h3>
-        <span class="trend-meta">{{ poll.vote_count }} vote{{ poll.vote_count|pluralize }} <b>↗</b></span>
-      </a>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
-<section class="explore-section">
-  <div class="section-head">
-    <div><div class="eyebrow">FIND YOUR NEXT DEBATE</div><h2>Explore polls<span class="period">.</span></h2></div>
-    <span class="muted">{{ paginator.count }} question{{ paginator.count|pluralize }}</span>
-  </div>
-  <nav class="category-rail" aria-label="Filter by category">
-    <a class="category-chip {% if not selected_category %}active{% endif %}" href="{% url 'home' %}?q={{ query|urlencode }}&sort={{ selected_sort }}">Everything</a>
-    {% for value,label in categories %}<a class="category-chip {% if selected_category == value %}active{% endif %}" href="{% url 'home' %}?q={{ query|urlencode }}&category={{ value }}&sort={{ selected_sort }}">{{ label }}</a>{% endfor %}
-  </nav>
-  <form method="get" class="filters" role="search">
-    <label class="search-box"><span aria-hidden="true">⌕</span><input name="q" value="{{ query }}" placeholder="Search questions or people…" aria-label="Search questions or people"></label>
-    <input type="hidden" name="category" value="{{ selected_category }}">
-    <select name="sort" aria-label="Sort polls">
-      <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>Newest first</option>
-      <option value="popular" {% if selected_sort == "popular" %}selected{% endif %}>Most voted</option>
-      <option value="oldest" {% if selected_sort == "oldest" %}selected{% endif %}>Oldest first</option>
-    </select>
-    <button class="filter-button" type="submit">Search ↗</button>
-  </form>
-  <div class="poll-grid">
-    {% for poll in polls %}
-      <a class="poll-card" href="{% url 'poll_detail' poll.id %}">
-        <div class="card-top"><span class="tag">{{ poll.get_category_display }}</span><span class="muted">@{{ poll.creator.username }}</span></div>
-        <h3>{{ poll.question }}</h3>
-        {% if poll.description %}<p>{{ poll.description|truncatechars:95 }}</p>{% else %}<p class="card-prompt">What's your take?</p>{% endif %}
-        <div class="card-bottom"><span>{{ poll.option_count }} choices</span><span>{{ poll.vote_count }} votes</span><span class="arrow">↗</span></div>
-      </a>
-    {% empty %}
-      <div class="empty"><span class="empty-icon">✳</span><h3>No takes found.</h3><p>Try another search, or start the conversation yourself.</p>{% if user.is_authenticated %}<a class="text-link" href="{% url 'create_poll' %}">Create the first poll →</a>{% else %}<a class="text-link" href="{% url 'signup' %}">Join lowkey →</a>{% endif %}</div>
-    {% endfor %}
-  </div>
-  {% if page_obj.has_other_pages %}
-    <nav class="pagination" aria-label="Poll pages">
-      {% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&category={{ selected_category }}&sort={{ selected_sort }}&page={{ page_obj.previous_page_number }}">← Newer</a>{% else %}<span class="disabled">← Newer</span>{% endif %}
-      <span>PAGE {{ page_obj.number }} / {{ paginator.num_pages }}</span>
-      {% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&category={{ selected_category }}&sort={{ selected_sort }}&page={{ page_obj.next_page_number }}">Older →</a>{% else %}<span class="disabled">Older →</span>{% endif %}
-    </nav>
-  {% endif %}
-</section>
+<section class="hero hero-home social-hero"><div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> YOUR SOCIAL CORNER</div><h1>Your people.<br><em>Your opinions.</em></h1><p>A place to post what's on your mind, find your crowd, and get into conversations worth having.</p>{% if user.is_authenticated %}<a class="button" href="#compose">Create a post <span>↗</span></a>{% else %}<a class="button" href="{% url 'signup' %}">Join the conversation <span>↗</span></a>{% endif %}</div><div class="hero-stamp" aria-hidden="true"><span>THE</span><strong>LOW<br>KEY</strong><span>OPINION CLUB</span><i>✳</i></div></section>
+<section class="community-strip"><div><strong>{{ community_stats.polls }}</strong><span>posts</span></div><div><strong>{{ community_stats.members }}</strong><span>members</span></div><div><strong>{{ community_stats.votes }}</strong><span>opinions shared</span></div><div class="strip-note">Good takes are better<br>when they're shared.</div></section>
+{% if user.is_authenticated %}<section class="compose-card" id="compose"><div class="compose-avatar">{{ user.username|first|upper }}</div><form method="post" action="{% url 'create_social_post' %}">{% csrf_token %}<label for="id_body">What's on your mind, @{{ user.username }}?</label>{{ post_form.body }}<div class="compose-bottom"><span>Keep it lowkey. · 1,200 characters max</span><button class="button" type="submit">Post ↗</button></div></form></section>{% endif %}
+{% if trending and feed != 'following' %}<section class="trending-section"><div class="section-head compact-head"><div><div class="eyebrow">THE CROWD HAS SPOKEN</div><h2>Making <em>noise</em></h2></div><span class="trend-mark">↗ Trending polls</span></div><div class="trending-grid">{% for poll in trending %}<a class="trend-card trend-{{ forloop.counter }}" href="{% url 'poll_detail' poll.id %}"><span class="trend-number">0{{ forloop.counter }}</span><span class="tag">{{ poll.get_category_display }}</span><h3>{{ poll.question }}</h3><span class="trend-meta">{{ poll.vote_count }} votes <b>↗</b></span></a>{% endfor %}</div></section>{% endif %}
+<section class="explore-section social-feed-section"><div class="section-head"><div><div class="eyebrow">YOUR CORNER OF THE INTERNET</div><h2>{% if feed == 'following' %}Following{% else %}The feed{% endif %}<span class="period">.</span></h2></div><span class="muted">{{ paginator.count }} post{{ paginator.count|pluralize }}</span></div>
+<div class="feed-tabs"><a class="feed-tab {% if feed == 'for-you' %}active{% endif %}" href="{% url 'home' %}">For you</a>{% if user.is_authenticated %}<a class="feed-tab {% if feed == 'following' %}active{% endif %}" href="{% url 'home' %}?feed=following">Following <span>{{ following_count }}</span></a>{% else %}<a class="feed-tab" href="{% url 'login' %}">Following <span>Log in</span></a>{% endif %}</div>
+<nav class="category-rail"><a class="category-chip {% if not selected_category %}active{% endif %}" href="{% url 'home' %}?feed={{ feed }}">Everything</a>{% for value,label in categories %}<a class="category-chip {% if selected_category == value %}active{% endif %}" href="{% url 'home' %}?feed={{ feed }}&q={{ query|urlencode }}&category={{ value }}&sort={{ selected_sort }}">{{ label }}</a>{% endfor %}</nav>
+<form method="get" class="filters" role="search">{% if feed == 'following' %}<input type="hidden" name="feed" value="following">{% endif %}<label class="search-box"><span>⌕</span><input name="q" value="{{ query }}" placeholder="Search posts or people…" aria-label="Search posts or people"></label><input type="hidden" name="category" value="{{ selected_category }}"><select name="sort"><option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest first</option><option value="popular" {% if selected_sort == 'popular' %}selected{% endif %}>Most liked</option><option value="oldest" {% if selected_sort == 'oldest' %}selected{% endif %}>Oldest first</option></select><button class="filter-button" type="submit">Search ↗</button></form>
+<div class="social-feed">{% for entry in feed_items %}{% if entry.kind == 'poll' %}{% with poll=entry.item %}<article class="feed-post"><div class="post-author-row"><a class="mini-avatar" href="{% url 'profile' poll.creator.username %}">{{ poll.creator.username|first|upper }}</a><div class="post-author"><a href="{% url 'profile' poll.creator.username %}">@{{ poll.creator.username }}</a><span>{{ poll.created_at|timesince }} ago · {{ poll.get_category_display }}</span></div><span class="post-kind">POLL</span></div><a class="post-main" href="{% url 'poll_detail' poll.id %}"><h3>{{ poll.question }}</h3>{% if poll.description %}<p>{{ poll.description|truncatechars:160 }}</p>{% else %}<p class="card-prompt">What's your take?</p>{% endif %}<div class="post-options">{% for option in poll.options.all|slice:":3" %}<span>{{ option.text }}</span>{% endfor %}</div></a><div class="post-actions">{% if user.is_authenticated %}<form method="post" action="{% url 'like_poll' poll.id %}" class="feed-like-form">{% csrf_token %}<button class="feed-like {% if poll.id in liked_poll_ids %}liked{% endif %}" type="submit">{% if poll.id in liked_poll_ids %}♥{% else %}♡{% endif %} {{ poll.like_count }}</button></form>{% else %}<span class="post-stat">♡ {{ poll.like_count }}</span>{% endif %}<span class="post-stat">{{ poll.vote_count }} votes</span><span class="post-stat">{{ poll.comments.count }} comments</span><a href="{% url 'poll_detail' poll.id %}" class="post-action-link">Discuss ↗</a></div></article>{% endwith %}{% else %}{% with post=entry.item %}<article class="feed-post text-feed-post"><div class="post-author-row"><a class="mini-avatar" href="{% url 'profile' post.author.username %}">{{ post.author.username|first|upper }}</a><div class="post-author"><a href="{% url 'profile' post.author.username %}">@{{ post.author.username }}</a><span>{{ post.created_at|timesince }} ago</span></div><span class="post-kind">POST</span></div><a class="text-post-body" href="{% url 'social_post_detail' post.id %}">{{ post.body|linebreaksbr }}</a><div class="post-actions">{% if user.is_authenticated %}<form method="post" action="{% url 'like_social_post' post.id %}" class="feed-like-form">{% csrf_token %}<button class="feed-like {% if post.id in liked_post_ids %}liked{% endif %}" type="submit">{% if post.id in liked_post_ids %}♥{% else %}♡{% endif %} {{ post.like_count }}</button></form>{% else %}<span class="post-stat">♡ {{ post.like_count }}</span>{% endif %}<span class="post-stat">{{ post.comment_count }} comments</span><a href="{% url 'social_post_detail' post.id %}" class="post-action-link">Discuss ↗</a></div></article>{% endwith %}{% endif %}{% empty %}<div class="empty"><span class="empty-icon">✳</span><h3>{% if feed == 'following' %}Your feed is quiet.{% else %}Nothing here yet.{% endif %}</h3><p>Follow people or be the first to start a conversation.</p>{% if user.is_authenticated %}<a class="text-link" href="#compose">Write a post →</a>{% else %}<a class="text-link" href="{% url 'signup' %}">Join lowkey →</a>{% endif %}</div>{% endfor %}</div>
+{% if page_obj.has_other_pages %}<nav class="pagination">{% if page_obj.has_previous %}<a href="?feed={{ feed }}&q={{ query|urlencode }}&category={{ selected_category }}&sort={{ selected_sort }}&page={{ page_obj.previous_page_number }}">← Newer</a>{% else %}<span class="disabled">← Newer</span>{% endif %}<span>PAGE {{ page_obj.number }} / {{ paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?feed={{ feed }}&q={{ query|urlencode }}&category={{ selected_category }}&sort={{ selected_sort }}&page={{ page_obj.next_page_number }}">Older →</a>{% else %}<span class="disabled">Older →</span>{% endif %}</nav>{% endif %}</section>
 {% endblock %}
